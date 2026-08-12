@@ -24,6 +24,8 @@ import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
 
+typealias Reject = (code: String, message: String, exception: BroadcastException?) -> Unit
+
 object IvsStageManager : IvsAppLifecycleDelegate {
   interface EventHandler {
     fun onConnectionStateChanged(body: WritableMap)
@@ -67,9 +69,7 @@ object IvsStageManager : IvsAppLifecycleDelegate {
   private val mainHandler = Handler(Looper.getMainLooper())
   private var leaveTimeoutRunnable: Runnable? = null
 
-  private companion object {
-    private const val LEAVE_TIMEOUT_MS = 5000L
-  }
+  private const val LEAVE_TIMEOUT_MS = 5000L
 
   fun initialize(context: Context) {
     if (appContext != null) return
@@ -693,6 +693,9 @@ object IvsStageManager : IvsAppLifecycleDelegate {
     cameraDevice = camera
     cameraStream = ImageLocalStageStream(camera, videoConfig)
     cameraStream?.setMuted(muted)
+    // The publish moved to the new device; the hold and previews still point at the old one.
+    IvsDevices.retargetCamera(camera)
+    IvsLocalPreviewView.onLocalCameraChanged()
   }
 
   private fun clearLocalStreams() {
@@ -871,5 +874,4 @@ object IvsStageManager : IvsAppLifecycleDelegate {
     }
   }
 
-  typealias Reject = (code: String, message: String, exception: BroadcastException?) -> Unit
 }

@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.facebook.fbreact.specs.NativeAmazonIvsRealTimeSpec
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
@@ -253,8 +252,12 @@ class AmazonIvsRealTimeModule(reactContext: ReactApplicationContext) :
         promise.reject("unknown", "Invalid audio output.")
         return@runOnUiThread
       }
-      IvsAudioSession.setAudioOutput(reactApplicationContext, output)
-      promise.resolve(null)
+      try {
+        IvsAudioSession.setAudioOutput(reactApplicationContext, output)
+        promise.resolve(null)
+      } catch (t: Throwable) {
+        promise.reject("unknown", t.message ?: "Failed to set audio output.")
+      }
     }
   }
 
